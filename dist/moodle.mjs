@@ -62948,7 +62948,12 @@ async function call(wsfunction, params = {}) {
   const response = await fetch(`${config2.url}/webservice/rest/server.php`, {
     method: "POST",
     // keeps the token out of server URL logs
-    body: new URLSearchParams({ wstoken: config2.token, wsfunction, moodlewsrestformat: "json", ...params }),
+    body: new URLSearchParams({
+      wstoken: config2.token,
+      wsfunction,
+      moodlewsrestformat: "json",
+      ...params
+    }),
     signal: AbortSignal.timeout(3e4)
   });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -62967,10 +62972,21 @@ function parseToken(input) {
 }
 var when = (seconds) => seconds ? new Date(seconds * 1e3).toLocaleString("sv") : null;
 function plain(html = "") {
-  const entities = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", ndash: "\u2013", mdash: "\u2014" };
+  const entities = {
+    amp: "&",
+    lt: "<",
+    gt: ">",
+    quot: '"',
+    apos: "'",
+    nbsp: " ",
+    ndash: "\u2013",
+    mdash: "\u2014"
+  };
   return html.replace(/<a\b[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, "$2 ($1)").replace(/<br\s*\/?>|<\/(p|div|li|h\d|tr)>/gi, "\n").replace(/<[^>]*>/g, "").replace(/&(#x?[0-9a-f]+|\w+);/gi, (whole, name) => {
     if (name[0] !== "#") return entities[name] ?? whole;
-    return String.fromCodePoint(Number(name[1] === "x" ? `0${name.slice(1)}` : name.slice(1)));
+    return String.fromCodePoint(
+      Number(name[1] === "x" ? `0${name.slice(1)}` : name.slice(1))
+    );
   }).replace(/\n\s*\n+/g, "\n").trim();
 }
 var file = (f2) => ({
@@ -62981,7 +62997,9 @@ var file = (f2) => ({
 function matching(courses, query) {
   if (!query) return courses;
   const wanted = query.toLowerCase();
-  const found = courses.filter((c2) => String(c2.id) === wanted || c2.fullname.toLowerCase().includes(wanted));
+  const found = courses.filter(
+    (c2) => String(c2.id) === wanted || c2.fullname.toLowerCase().includes(wanted)
+  );
   assert3(found.length, `No course matches "${query}"`);
   return found;
 }
@@ -62989,7 +63007,10 @@ async function userId() {
   return (await call("core_webservice_get_site_info")).userid;
 }
 async function enrolled(query) {
-  return matching(await call("core_enrol_get_users_courses", { userid: await userId() }), query);
+  return matching(
+    await call("core_enrol_get_users_courses", { userid: await userId() }),
+    query
+  );
 }
 async function attempt(failed, entry, work) {
   try {
@@ -63017,20 +63038,28 @@ async function assignments(query, onlyPending) {
   const { courses, warnings } = await call("mod_assign_get_assignments");
   const now = Date.now() / 1e3;
   const result = { checked: 0, assignments: [], failed: [], noAccess: {} };
-  for (const { item } of warnings) result.noAccess[item] = (result.noAccess[item] ?? 0) + 1;
+  for (const { item } of warnings)
+    result.noAccess[item] = (result.noAccess[item] ?? 0) + 1;
   for (const course of matching(courses, query)) {
     for (const a2 of course.assignments) {
       if (a2.nosubmissions && onlyPending) continue;
       const entry = { id: a2.id, course: course.fullname, name: a2.name };
       if (a2.nosubmissions) {
-        result.assignments.push({ ...entry, due: when(a2.duedate), state: "nothing to submit online" });
+        result.assignments.push({
+          ...entry,
+          due: when(a2.duedate),
+          state: "nothing to submit online"
+        });
         continue;
       }
       await attempt(result.failed, entry, async () => {
-        const status = await call("mod_assign_get_submission_status", { assignid: a2.id });
+        const status = await call("mod_assign_get_submission_status", {
+          assignid: a2.id
+        });
         const info2 = classify(a2, status, now);
         result.checked++;
-        if (!onlyPending || info2.state !== "submitted") result.assignments.push({ ...entry, ...info2 });
+        if (!onlyPending || info2.state !== "submitted")
+          result.assignments.push({ ...entry, ...info2 });
       });
     }
   }
@@ -63039,13 +63068,19 @@ async function assignments(query, onlyPending) {
 }
 async function show(id) {
   const { courses } = await call("mod_assign_get_assignments");
-  const course = courses.find((c2) => c2.assignments.some((a3) => String(a3.id) === id));
+  const course = courses.find(
+    (c2) => c2.assignments.some((a3) => String(a3.id) === id)
+  );
   assert3(course, `No assignment with id ${id}`);
   const a2 = course.assignments.find((x2) => String(x2.id) === id);
-  const status = await call("mod_assign_get_submission_status", { assignid: a2.id });
+  const status = await call("mod_assign_get_submission_status", {
+    assignid: a2.id
+  });
   const submission = status.lastattempt?.teamsubmission ?? status.lastattempt?.submission;
   const filesOf = (plugins = []) => plugins.flatMap((p) => p.fileareas ?? []).flatMap((area) => area.files ?? []).map(file);
-  const textOf = (plugins = []) => plain(plugins.flatMap((p) => p.editorfields ?? []).map((f2) => f2.text).join("\n"));
+  const textOf = (plugins = []) => plain(
+    plugins.flatMap((p) => p.editorfields ?? []).map((f2) => f2.text).join("\n")
+  );
   return {
     id: a2.id,
     course: course.fullname,
@@ -63055,24 +63090,35 @@ async function show(id) {
     cutoff: when(a2.cutoffdate),
     ...classify(a2, status, Date.now() / 1e3),
     instructions: plain([a2.intro, a2.activity].filter(Boolean).join("\n")),
-    attachments: [...a2.introfiles ?? [], ...a2.introattachments ?? []].map(file),
+    attachments: [...a2.introfiles ?? [], ...a2.introattachments ?? []].map(
+      file
+    ),
     submission: {
       modified: when(submission?.timemodified),
       text: textOf(submission?.plugins),
       files: filesOf(submission?.plugins)
     },
     grade: plain(status.feedback?.gradefordisplay) || null,
-    feedback: { text: textOf(status.feedback?.plugins), files: filesOf(status.feedback?.plugins) }
+    feedback: {
+      text: textOf(status.feedback?.plugins),
+      files: filesOf(status.feedback?.plugins)
+    }
   };
 }
 async function courseList() {
-  return (await enrolled()).map((c2) => ({ id: c2.id, name: c2.fullname, progress: c2.progress }));
+  return (await enrolled()).map((c2) => ({
+    id: c2.id,
+    name: c2.fullname,
+    progress: c2.progress
+  }));
 }
 async function contents(query) {
   assert3(query, "Usage: contents <course id or name>");
   const result = [];
   for (const course of await enrolled(query)) {
-    const sections = await call("core_course_get_contents", { courseid: course.id });
+    const sections = await call("core_course_get_contents", {
+      courseid: course.id
+    });
     result.push({
       course: course.fullname,
       sections: sections.map((s2) => ({
@@ -63099,7 +63145,10 @@ async function quizzes(query) {
     if (!course) continue;
     const entry = { id: quiz.id, course: course.fullname, name: quiz.name };
     await attempt(result.failed, entry, async () => {
-      const { attempts } = await call("mod_quiz_get_user_quiz_attempts", { quizid: quiz.id, status: "all" });
+      const { attempts } = await call("mod_quiz_get_user_quiz_attempts", {
+        quizid: quiz.id,
+        status: "all"
+      });
       result.quizzes.push({
         ...entry,
         url: `${config2.url}/mod/quiz/view.php?id=${quiz.coursemodule}`,
@@ -63107,7 +63156,9 @@ async function quizzes(query) {
         closes: when(quiz.timeclose),
         closed: quiz.timeclose > 0 && quiz.timeclose < now,
         finishedAttempts: attempts.filter((a2) => a2.state === "finished").length,
-        unfinishedAttempt: attempts.some((a2) => a2.state === "inprogress" || a2.state === "overdue"),
+        unfinishedAttempt: attempts.some(
+          (a2) => a2.state === "inprogress" || a2.state === "overdue"
+        ),
         allowedAttempts: quiz.attempts || "unlimited"
       });
     });
@@ -63119,7 +63170,10 @@ async function grades(query) {
   const result = { courses: [], failed: [] };
   for (const course of await enrolled(query)) {
     await attempt(result.failed, { course: course.fullname }, async () => {
-      const { usergrades } = await call("gradereport_user_get_grade_items", { courseid: course.id, userid });
+      const { usergrades } = await call("gradereport_user_get_grade_items", {
+        courseid: course.id,
+        userid
+      });
       result.courses.push({
         course: course.fullname,
         items: usergrades[0].gradeitems.map((g2) => ({
@@ -63158,16 +63212,22 @@ async function news(query) {
     if (!course) continue;
     const entry = { course: course.fullname, forum: forum.name };
     await attempt(result.failed, entry, async () => {
-      const { discussions } = await call("mod_forum_get_forum_discussions", { forumid: forum.id, page: 0, perpage: 5 });
-      result.posts.push(...discussions.map((d2) => ({
-        ...entry,
-        date: when(d2.timemodified),
-        subject: d2.subject,
-        author: d2.userfullname,
-        replies: d2.numreplies,
-        message: plain(d2.message),
-        url: `${config2.url}/mod/forum/discuss.php?d=${d2.discussion}`
-      })));
+      const { discussions } = await call("mod_forum_get_forum_discussions", {
+        forumid: forum.id,
+        page: 0,
+        perpage: 5
+      });
+      result.posts.push(
+        ...discussions.map((d2) => ({
+          ...entry,
+          date: when(d2.timemodified),
+          subject: d2.subject,
+          author: d2.userfullname,
+          replies: d2.numreplies,
+          message: plain(d2.message),
+          url: `${config2.url}/mod/forum/discuss.php?d=${d2.discussion}`
+        }))
+      );
     });
   }
   result.posts.sort((a2, b2) => b2.date.localeCompare(a2.date));
@@ -63178,8 +63238,14 @@ function fileAddress(url2, site) {
   const target = new URL(url2);
   const base = new URL(site);
   const root = base.pathname.replace(/\/$/, "");
-  const prefix = [`${root}/webservice/pluginfile.php/`, `${root}/pluginfile.php/`].find((p) => target.pathname.startsWith(p));
-  assert3(target.origin === base.origin && prefix, "That is not a file on your Moodle");
+  const prefix = [
+    `${root}/webservice/pluginfile.php/`,
+    `${root}/pluginfile.php/`
+  ].find((p) => target.pathname.startsWith(p));
+  assert3(
+    target.origin === base.origin && prefix,
+    "That is not a file on your Moodle"
+  );
   target.pathname = `${root}/webservice/pluginfile.php/${target.pathname.slice(prefix.length)}`;
   return target;
 }
@@ -63207,13 +63273,22 @@ async function openFile({ url: url2, save }) {
     writeFileSync(path, bytes);
     return reply(path);
   }
-  if (/^image\/(png|jpeg|gif|webp)$/.test(type)) return { type: "image", data: bytes.toString("base64"), mimeType: type };
+  if (/^image\/(png|jpeg|gif|webp)$/.test(type))
+    return { type: "image", data: bytes.toString("base64"), mimeType: type };
   if (type === "application/pdf") {
-    const { text: pages } = await extractText(await getDocumentProxy(new Uint8Array(bytes)), { mergePages: true });
-    return reply(pages.trim() || "This PDF has no readable text. Call again with save to look at it.");
+    const { text: pages } = await extractText(
+      await getDocumentProxy(new Uint8Array(bytes)),
+      { mergePages: true }
+    );
+    return reply(
+      pages.trim() || "This PDF has no readable text. Call again with save to look at it."
+    );
   }
-  if (type.startsWith("text/") || type === "application/json") return reply(bytes.toString());
-  throw new Error(`Cannot read ${type || "this file type"} directly. Call again with save.`);
+  if (type.startsWith("text/") || type === "application/json")
+    return reply(bytes.toString());
+  throw new Error(
+    `Cannot read ${type || "this file type"} directly. Call again with save.`
+  );
 }
 var CAS = "https://edea.juntadeandalucia.es";
 var SITE = "https://educacionadistancia.juntadeandalucia.es/centros/sevilla";
@@ -63240,7 +63315,8 @@ async function casFollow(jar, url2, body) {
   let response = await casRequest(jar, url2, body);
   for (let hop = 0; hop < 10; hop++) {
     const next = response.headers.get("location");
-    if (!next || next.startsWith("moodlemobile:")) return { url: url2, response, next };
+    if (!next || next.startsWith("moodlemobile:"))
+      return { url: url2, response, next };
     url2 = new URL(next, url2).href;
     response = await casRequest(jar, url2);
   }
@@ -63251,18 +63327,32 @@ async function login() {
   assert3(user && password, "Set MOODLE_USER and MOODLE_PASSWORD");
   const jar = /* @__PURE__ */ new Map();
   const start = await casFollow(jar, `${SITE}/login/index.php?authCAS=CAS`);
-  const execution = (await start.response.text()).match(/name="execution"\s+value="([^"]+)"/)?.[1];
-  assert3(start.url.startsWith(`${CAS}/cas/login`) && execution, "Sign-in form not found");
-  const signedIn = await casFollow(jar, start.url, new URLSearchParams({
-    username: user,
-    password,
-    execution,
-    _eventId: "submit",
-    geolocation: ""
-  }));
+  const execution = (await start.response.text()).match(
+    /name="execution"\s+value="([^"]+)"/
+  )?.[1];
+  assert3(
+    start.url.startsWith(`${CAS}/cas/login`) && execution,
+    "Sign-in form not found"
+  );
+  const signedIn = await casFollow(
+    jar,
+    start.url,
+    new URLSearchParams({
+      username: user,
+      password,
+      execution,
+      _eventId: "submit",
+      geolocation: ""
+    })
+  );
   assert3(signedIn.url.startsWith(SITE), "Not signed in: stayed outside Moodle");
-  const launch = await casFollow(jar, `${SITE}/admin/tool/mobile/launch.php?service=moodle_mobile_app&passport=12345&urlscheme=moodlemobile`);
-  const address = launch.next ?? (await launch.response.text()).match(/moodlemobile:\/\/token=[\w+/=]+/)?.[0];
+  const launch = await casFollow(
+    jar,
+    `${SITE}/admin/tool/mobile/launch.php?service=moodle_mobile_app&passport=12345&urlscheme=moodlemobile`
+  );
+  const address = launch.next ?? (await launch.response.text()).match(
+    /moodlemobile:\/\/token=[\w+/=]+/
+  )?.[0];
   assert3(address, "No token received");
   config2 = { url: SITE, token: parseToken(address) };
   const { fullname } = await call("core_webservice_get_site_info");
@@ -63271,45 +63361,84 @@ async function login() {
 }
 function selftest() {
   const assignment = { duedate: 100 };
-  const status = (submission, extra) => ({ lastattempt: { submission, ...extra } });
+  const status = (submission, extra) => ({
+    lastattempt: { submission, ...extra }
+  });
   const check = (...args) => classify(assignment, status(...args), 200);
   assert3.equal(check({ status: "submitted" }).overdue, false);
-  assert3.equal(check({ status: "new" }, { teamsubmission: { status: "submitted" } }).state, "submitted");
+  assert3.equal(
+    check({ status: "new" }, { teamsubmission: { status: "submitted" } }).state,
+    "submitted"
+  );
   assert3.equal(check(void 0).state, "not submitted");
   assert3.equal(check({ status: "draft" }).overdue, true);
-  assert3.equal(check({ status: "new" }, { extensionduedate: 300 }).overdue, false);
-  assert3.equal(classify({ duedate: 0 }, status({ status: "reopened" }), 200).due, null);
+  assert3.equal(
+    check({ status: "new" }, { extensionduedate: 300 }).overdue,
+    false
+  );
+  assert3.equal(
+    classify({ duedate: 0 }, status({ status: "reopened" }), 200).due,
+    null
+  );
   assert3.throws(() => classify(assignment, {}, 200));
   const encoded = Buffer.from("sig:::abc123:::private").toString("base64");
   assert3.equal(parseToken(encoded), "abc123");
   assert3.equal(parseToken(`moodlemobile://token=${encoded}
 `), "abc123");
   assert3.throws(() => parseToken("nonsense"));
-  assert3.equal(plain('<p>a &amp; <a href="x">b</a></p><p>&#241;&#xf1;</p>'), "a & b (x)\n\xF1\xF1");
+  assert3.equal(
+    plain('<p>a &amp; <a href="x">b</a></p><p>&#241;&#xf1;</p>'),
+    "a & b (x)\n\xF1\xF1"
+  );
   assert3.equal(plain("0&ndash;10"), "0\u201310");
   assert3.equal(matching([{ id: 1, fullname: "Redes" }], "red").length, 1);
   assert3.throws(() => matching([], "red"));
   const site = "https://school.example/moodle";
   const allowed = "https://school.example/moodle/webservice/pluginfile.php/1/a.pdf";
-  assert3.equal(fileAddress("https://school.example/moodle/pluginfile.php/1/a.pdf", site).href, allowed);
+  assert3.equal(
+    fileAddress("https://school.example/moodle/pluginfile.php/1/a.pdf", site).href,
+    allowed
+  );
   assert3.equal(fileAddress(allowed, site).href, allowed);
-  assert3.throws(() => fileAddress("https://evil.example/moodle/pluginfile.php/1/a.pdf", site));
-  assert3.throws(() => fileAddress(`${site}/pluginfile.php/../login/index.php`, site));
+  assert3.throws(
+    () => fileAddress("https://evil.example/moodle/pluginfile.php/1/a.pdf", site)
+  );
+  assert3.throws(
+    () => fileAddress(`${site}/pluginfile.php/../login/index.php`, site)
+  );
   return "ok";
 }
 function createServer() {
   const server = new McpServer({ name: "moodle", version: "1.0.0" });
   const tool = (name, description, shape, work) => server.registerTool(
     name,
-    { description, inputSchema: object(shape), annotations: { readOnlyHint: true } },
+    {
+      description,
+      inputSchema: object(shape),
+      annotations: { readOnlyHint: true }
+    },
     async (args) => {
       config2 = void 0;
-      return { content: [{ type: "text", text: JSON.stringify(await work(args), null, 1) }] };
+      return {
+        content: [
+          { type: "text", text: JSON.stringify(await work(args), null, 1) }
+        ]
+      };
     }
   );
   const course = string2().optional().describe("Course id or part of its name");
-  tool("pending", "Assignments not submitted, overdue ones included", { course }, (a2) => assignments(a2.course, true));
-  tool("list", "Every assignment with its state", { course }, (a2) => assignments(a2.course, false));
+  tool(
+    "pending",
+    "Assignments not submitted, overdue ones included",
+    { course },
+    (a2) => assignments(a2.course, true)
+  );
+  tool(
+    "list",
+    "Every assignment with its state",
+    { course },
+    (a2) => assignments(a2.course, false)
+  );
   tool(
     "show",
     "One assignment: instructions, files, dates, submission, grade, feedback",
@@ -63317,14 +63446,32 @@ function createServer() {
     (a2) => show(String(a2.id))
   );
   tool("courses", "Enrolled courses", {}, courseList);
-  tool("contents", "Sections, activities and files of a course", { course: course.unwrap() }, (a2) => contents(a2.course));
-  tool("quizzes", "Quizzes with open and close dates and attempts used", { course }, (a2) => quizzes(a2.course));
+  tool(
+    "contents",
+    "Sections, activities and files of a course",
+    { course: course.unwrap() },
+    (a2) => contents(a2.course)
+  );
+  tool(
+    "quizzes",
+    "Quizzes with open and close dates and attempts used",
+    { course },
+    (a2) => quizzes(a2.course)
+  );
   tool("grades", "Grade items and totals", { course }, (a2) => grades(a2.course));
   tool("upcoming", "Calendar deadlines from now on", {}, upcoming);
-  tool("news", "The 20 latest forum discussions", { course }, (a2) => news(a2.course));
+  tool(
+    "news",
+    "The 20 latest forum discussions",
+    { course },
+    (a2) => news(a2.course)
+  );
   server.registerTool(
     "login",
-    { description: "Sign in through Acceso \xDAnico with MOODLE_USER/MOODLE_PASSWORD and save a fresh token", inputSchema: object({}) },
+    {
+      description: "Sign in through Acceso \xDAnico with MOODLE_USER/MOODLE_PASSWORD and save a fresh token",
+      inputSchema: object({})
+    },
     async () => {
       config2 = void 0;
       return { content: [{ type: "text", text: await login() }] };
@@ -63336,7 +63483,9 @@ function createServer() {
       description: "Read a Moodle file: text of PDFs and text files, or an image. Kept in memory unless save is set",
       inputSchema: object({
         url: string2().describe("File url from show or contents"),
-        save: boolean2().optional().describe("Save to a new temporary folder and return the path instead")
+        save: boolean2().optional().describe(
+          "Save to a new temporary folder and return the path instead"
+        )
       })
     },
     async (args) => {
@@ -63351,7 +63500,10 @@ try {
   if (command === "login") console.log(await login());
   else if (command === "selftest") console.log(selftest());
   else {
-    assert3(!command, "Commands: login, selftest, or none to start the MCP server");
+    assert3(
+      !command,
+      "Commands: login, selftest, or none to start the MCP server"
+    );
     serveStdio(createServer);
   }
 } catch (error2) {

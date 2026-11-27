@@ -1,33 +1,33 @@
 {
-  "name": "moodle",
-  "version": "1.0.0",
-  "description": "Read your Moodle: assignments, grades, deadlines and course files.",
-  "author": { "name": "nyarw" },
-  "license": "MIT",
-  "icon": ".claude-plugin/icon.png",
-  "mcpServers": {
-    "moodle": {
-      "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/dist/moodle.mjs"],
-      "env": {
-        "MOODLE_USER": "${user_config.moodle_user}",
-        "MOODLE_PASSWORD": "${user_config.moodle_password}"
-      }
-    }
-  },
-  "userConfig": {
-    "moodle_user": {
-      "type": "string",
-      "title": "Moodle username",
-      "description": "Acceso Único username, used by /login to renew the token",
-      "required": true
-    },
-    "moodle_password": {
-      "type": "string",
-      "title": "Moodle password",
-      "description": "Acceso Único password, used by /login to renew the token",
-      "sensitive": true,
-      "required": true
-    }
-  }
+	"name": "moodle",
+	"version": "1.0.0",
+	"description": "Read your Moodle: assignments, grades, deadlines and course files.",
+	"author": { "name": "nyarw" },
+	"license": "MIT",
+	"icon": ".claude-plugin/icon.png",
+	"mcpServers": {
+		"moodle": {
+			"command": "node",
+			"args": ["${CLAUDE_PLUGIN_ROOT}/dist/moodle.mjs"],
+			"env": {
+				"MOODLE_USER": "${user_config.moodle_user}",
+				"MOODLE_PASSWORD": "${user_config.moodle_password}"
+			}
+		}
+	},
+	"userConfig": {
+		"moodle_user": {
+			"type": "string",
+			"title": "Moodle username",
+			"description": "Acceso Único username, used by /login to renew the token",
+			"required": true
+		},
+		"moodle_password": {
+			"type": "string",
+			"title": "Moodle password",
+			"description": "Acceso Único password, used by /login to renew the token",
+			"sensitive": true,
+			"required": true
+		}
+	}
 }

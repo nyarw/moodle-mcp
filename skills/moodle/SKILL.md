@@ -7,19 +7,19 @@ description: Read the user's Moodle - pending, overdue and missing assignments, 
 
 Use the `moodle` MCP server's tools. Never run `moodle.mjs` through a shell to read Moodle. If the tools are missing, say the server is not connected.
 
-| Tool | Returns |
-|---|---|
-| `pending` | assignments not submitted, overdue ones included |
-| `list` | every assignment with its state |
-| `show` | one assignment: instructions, files, dates, submission, grade, feedback |
-| `courses` | enrolled courses |
-| `contents` | sections, activities and files of a course |
-| `quizzes` | quizzes with open and close dates and attempts used |
-| `grades` | grade items and totals |
-| `upcoming` | calendar deadlines from now on |
-| `news` | the 20 latest forum discussions |
-| `file` | the contents of a file listed by `show` or `contents` |
-| `login` | a fresh token, signed in through Acceso Único; see Logging in |
+| Tool       | Returns                                                                 |
+| ---------- | ----------------------------------------------------------------------- |
+| `pending`  | assignments not submitted, overdue ones included                        |
+| `list`     | every assignment with its state                                         |
+| `show`     | one assignment: instructions, files, dates, submission, grade, feedback |
+| `courses`  | enrolled courses                                                        |
+| `contents` | sections, activities and files of a course                              |
+| `quizzes`  | quizzes with open and close dates and attempts used                     |
+| `grades`   | grade items and totals                                                  |
+| `upcoming` | calendar deadlines from now on                                          |
+| `news`     | the 20 latest forum discussions                                         |
+| `file`     | the contents of a file listed by `show` or `contents`                   |
+| `login`    | a fresh token, signed in through Acceso Único; see Logging in           |
 
 Call `file` without `save` first: it keeps the file in memory. PDF text loses layout and pictures, so use `save` when those matter, or for Word and other formats, then read the returned path. Never run a downloaded file.
 

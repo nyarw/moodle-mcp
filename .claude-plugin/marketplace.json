@@ -1,12 +1,12 @@
 {
-  "name": "moodle-mcp",
-  "description": "Read your Moodle from Claude Code.",
-  "owner": { "name": "nyarw" },
-  "plugins": [
-    {
-      "name": "moodle",
-      "description": "Read your Moodle: assignments, grades, deadlines and course files.",
-      "source": "./"
-    }
-  ]
+	"name": "moodle-mcp",
+	"description": "Read your Moodle from Claude Code.",
+	"owner": { "name": "nyarw" },
+	"plugins": [
+		{
+			"name": "moodle",
+			"description": "Read your Moodle: assignments, grades, deadlines and course files.",
+			"source": "./"
+		}
+	]
 }

@@ -1,21 +1,39 @@
 {
-  "name": "moodle-mcp",
-  "version": "1.0.0",
-  "description": "",
-  "scripts": {
-    "build": "esbuild src/moodle.mjs --bundle --platform=node --format=esm --outfile=dist/moodle.mjs --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\""
-  },
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
-  "type": "commonjs",
-  "dependencies": {
-    "@modelcontextprotocol/server": "^2.4.0",
-    "unpdf": "^2.2.3",
-    "zod": "^4.6.7"
-  },
-  "private": "true",
-  "devDependencies": {
-    "esbuild": "^0.28.2"
-  }
+	"name": "moodle-mcp",
+	"version": "1.0.0",
+	"description": "",
+	"scripts": {
+		"build": "esbuild src/moodle.mjs --bundle --platform=node --format=esm --outfile=dist/moodle.mjs --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\"",
+		"format": "biome format .",
+		"lint": "biome lint .",
+		"check": "biome check .",
+		"format:write": "biome format --write .",
+		"lint:write": "biome lint --write .",
+		"check:write": "biome check --write .",
+		"test": "node src/moodle.mjs selftest",
+		"prepare": "husky"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"type": "module",
+	"dependencies": {
+		"@modelcontextprotocol/server": "^2.4.0",
+		"unpdf": "^2.2.3",
+		"zod": "^4.6.7"
+	},
+	"private": true,
+	"devDependencies": {
+		"@biomejs/biome": "2.6.9",
+		"@commitlint/cli": "^21.2.4",
+		"@commitlint/config-conventional": "^21.2.4",
+		"esbuild": "^0.28.2",
+		"husky": "^9.1.7",
+		"lint-staged": "^17.6.2"
+	},
+	"lint-staged": {
+		"*.{js,mjs,json}": [
+			"biome check --write --no-errors-on-unmatched"
+		]
+	}
 }
