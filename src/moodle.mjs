@@ -16,7 +16,7 @@ function loadConfig() {
     return JSON.parse(readFileSync(CONFIG, 'utf8'));
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
-    throw new Error('Not logged in: run "node moodle.mjs login <site-url>"');
+    throw new Error('Not logged in: run /login');
   }
 }
 
@@ -328,6 +328,7 @@ async function openFile({ url, save }) {
 
 // Acceso Único (CAS), the only sign-in this Moodle offers.
 const CAS = 'https://edea.juntadeandalucia.es';
+const SITE = 'https://educacionadistancia.juntadeandalucia.es/centros/sevilla';
 
 async function casRequest(jar, url, body) {
   const { host } = new URL(url);
@@ -359,25 +360,21 @@ async function casFollow(jar, url, body) {
   throw new Error('Too many redirects');
 }
 
-async function login(site) {
-  assert(site, 'Usage: login <site-url>, with MOODLE_USER and MOODLE_PASSWORD set');
-  const url = new URL(site);
-  assert(url.protocol === 'https:', 'The site address must start with https://');
-  const base = url.href.replace(/\/+$/, '');
+async function login() {
   const { MOODLE_USER: user, MOODLE_PASSWORD: password } = process.env;
   assert(user && password, 'Set MOODLE_USER and MOODLE_PASSWORD');
   const jar = new Map();
-  const start = await casFollow(jar, `${base}/login/index.php?authCAS=CAS`);
+  const start = await casFollow(jar, `${SITE}/login/index.php?authCAS=CAS`);
   const execution = (await start.response.text()).match(/name="execution"\s+value="([^"]+)"/)?.[1];
   assert(start.url.startsWith(`${CAS}/cas/login`) && execution, 'Sign-in form not found');
   const signedIn = await casFollow(jar, start.url, new URLSearchParams({
     username: user, password, execution, _eventId: 'submit', geolocation: '',
   }));
-  assert(signedIn.url.startsWith(base), 'Not signed in: stayed outside Moodle');
-  const launch = await casFollow(jar, `${base}/admin/tool/mobile/launch.php?service=moodle_mobile_app&passport=12345&urlscheme=moodlemobile`);
+  assert(signedIn.url.startsWith(SITE), 'Not signed in: stayed outside Moodle');
+  const launch = await casFollow(jar, `${SITE}/admin/tool/mobile/launch.php?service=moodle_mobile_app&passport=12345&urlscheme=moodlemobile`);
   const address = launch.next ?? (await launch.response.text()).match(/moodlemobile:\/\/token=[\w+/=]+/)?.[0];
   assert(address, 'No token received');
-  config = { url: base, token: parseToken(address) };
+  config = { url: SITE, token: parseToken(address) };
   const { fullname } = await call('core_webservice_get_site_info');
   writeFileSync(CONFIG, JSON.stringify(config), { mode: 0o600 });
   return `Logged in as ${fullname}. Token saved to ${CONFIG}`;
@@ -435,6 +432,14 @@ function createServer() {
   tool('upcoming', 'Calendar deadlines from now on', {}, upcoming);
   tool('news', 'The 20 latest forum discussions', { course }, (a) => news(a.course));
   server.registerTool(
+    'login',
+    { description: 'Sign in through Acceso Único with MOODLE_USER/MOODLE_PASSWORD and save a fresh token', inputSchema: z.object({}) },
+    async () => {
+      config = undefined;
+      return { content: [{ type: 'text', text: await login() }] };
+    },
+  );
+  server.registerTool(
     'file',
     {
       description: 'Read a Moodle file: text of PDFs and text files, or an image. Kept in memory unless save is set',
@@ -451,12 +456,12 @@ function createServer() {
   return server;
 }
 
-const [command, argument] = process.argv.slice(2);
+const [command] = process.argv.slice(2);
 try {
-  if (command === 'login') console.log(await login(argument));
+  if (command === 'login') console.log(await login());
   else if (command === 'selftest') console.log(selftest());
   else {
-    assert(!command, 'Commands: login <site-url>, selftest, or none to start the MCP server');
+    assert(!command, 'Commands: login, selftest, or none to start the MCP server');
     serveStdio(createServer);
   }
 } catch (error) {
