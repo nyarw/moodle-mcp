@@ -40565,9 +40565,9 @@ fn fs_main(in : VertexOutput) -> @location(0) vec4<f32> {
 
 // src/moodle.mjs
 import assert3 from "node:assert/strict";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
-import { basename, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 
 // node_modules/@modelcontextprotocol/server/dist/chunk-vYduTEsO.mjs
 var __create = Object.create;
@@ -62842,9 +62842,9 @@ async function getDocumentProxy(data, options = {}) {
   let nodeDefaults = {};
   if (isNode) try {
     const nodeProcess = globalThis.process;
-    const { dirname, join: join2 } = nodeProcess.getBuiltinModule("node:path");
+    const { dirname: dirname2, join: join2 } = nodeProcess.getBuiltinModule("node:path");
     const { fileURLToPath } = nodeProcess.getBuiltinModule("node:url");
-    const pdfjsDir = dirname(fileURLToPath(import.meta.resolve("pdfjs-dist/package.json")));
+    const pdfjsDir = dirname2(fileURLToPath(import.meta.resolve("pdfjs-dist/package.json")));
     nodeDefaults = {
       useSystemFonts: false,
       standardFontDataUrl: `${join2(pdfjsDir, "standard_fonts")}/`,
@@ -62933,7 +62933,7 @@ function normalizeMergedText(texts) {
 }
 
 // src/moodle.mjs
-var CONFIG = join(homedir(), ".moodle-token.json");
+var CONFIG = join(process.env.MOODLE_DATA || homedir(), ".moodle-token.json");
 var config2;
 function loadConfig() {
   try {
@@ -63356,8 +63356,9 @@ async function login() {
   assert3(address, "No token received");
   config2 = { url: SITE, token: parseToken(address) };
   const { fullname } = await call("core_webservice_get_site_info");
+  mkdirSync(dirname(CONFIG), { recursive: true });
   writeFileSync(CONFIG, JSON.stringify(config2), { mode: 384 });
-  return `Logged in as ${fullname}. Token saved to ${CONFIG}`;
+  return `Signed in as ${fullname}.`;
 }
 function selftest() {
   const assignment = { duedate: 100 };

@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
-import { basename, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { McpServer } from "@modelcontextprotocol/server";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import { extractText, getDocumentProxy } from "unpdf";
 import * as z from "zod";
 
-// Kept in the home folder so the token is never copied or committed with the skill.
-const CONFIG = join(homedir(), ".moodle-token.json");
+// The plugin's data folder survives updates and is removed on uninstall.
+const CONFIG = join(process.env.MOODLE_DATA || homedir(), ".moodle-token.json");
 let config;
 
 function loadConfig() {
@@ -487,8 +487,9 @@ async function login() {
 	assert(address, "No token received");
 	config = { url: SITE, token: parseToken(address) };
 	const { fullname } = await call("core_webservice_get_site_info");
+	mkdirSync(dirname(CONFIG), { recursive: true });
 	writeFileSync(CONFIG, JSON.stringify(config), { mode: 0o600 });
-	return `Logged in as ${fullname}. Token saved to ${CONFIG}`;
+	return `Signed in as ${fullname}.`;
 }
 
 function selftest() {

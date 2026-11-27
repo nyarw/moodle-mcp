@@ -59,7 +59,7 @@ Run it again if a tool says your token has expired.
 ## Your data
 
 - The password is marked as sensitive in the plugin settings. It is the password for your whole school account, not only Moodle.
-- The access token is saved in `.moodle-token.json` in your home folder. Anyone who has it can read your Moodle.
+- The access token is saved as a plain file in the plugin's data folder, under `~/.claude/plugins/data/`, and is removed when you uninstall the plugin. Anyone who has it can read your Moodle.
 - What the tools return goes into your conversation with Claude.
 
 ## Development

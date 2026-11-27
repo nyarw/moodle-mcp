@@ -1,6 +1,6 @@
 {
 	"name": "moodle",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Read your Moodle: assignments, grades, deadlines and course files.",
 	"author": { "name": "nyarw" },
 	"license": "MIT",
@@ -10,6 +10,7 @@
 			"command": "node",
 			"args": ["${CLAUDE_PLUGIN_ROOT}/dist/moodle.mjs"],
 			"env": {
+				"MOODLE_DATA": "${CLAUDE_PLUGIN_DATA}",
 				"MOODLE_USER": "${user_config.moodle_user}",
 				"MOODLE_PASSWORD": "${user_config.moodle_password}"
 			}

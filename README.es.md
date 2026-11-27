@@ -59,7 +59,7 @@ Vuelve a ejecutarlo si una herramienta dice que tu token ha caducado.
 ## Tus datos
 
 - La contraseña está marcada como dato sensible en los ajustes del plugin. Es la contraseña de toda tu cuenta educativa, no solo de Moodle.
-- El token de acceso se guarda en `.moodle-token.json`, en tu carpeta de usuario. Quien lo tenga puede leer tu Moodle.
+- El token de acceso se guarda como un archivo sin cifrar en la carpeta de datos del plugin, dentro de `~/.claude/plugins/data/`, y se borra al desinstalar el plugin. Quien lo tenga puede leer tu Moodle.
 - Lo que devuelven las herramientas pasa a tu conversación con Claude.
 
 ## Desarrollo

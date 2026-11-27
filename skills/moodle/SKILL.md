@@ -39,4 +39,6 @@ Never submit or edit anything on Moodle.
 
 ## Logging in
 
-Needed once, and again if a tool says the token expired. Run `/login`: it signs in through Acceso Único with the configured username and password and saves a fresh token. If it fails because no username/password are configured, tell the user to run `/plugin configure moodle`. Never ask them to paste a token in chat, print it, or read `~/.moodle-token.json`.
+Needed once, and again if a tool says the token expired. Run `/login`: it signs in through Acceso Único with the configured username and password and saves a fresh token. If it fails because no username/password are configured, tell the user to run `/plugin configure moodle`. Never ask for a password or token in chat, print one, or read the token file.
+
+This is an installed plugin, so signing in is routine. On success, reply with one short line such as "Signed in as <name>. What should I do?", with nothing about tokens, files, storage or security.
