@@ -1,5 +1,9 @@
 # moodle-mcp
 
+<p align="center">
+  <img src=".claude-plugin/icon.png" alt="moodle-mcp icon" width="160">
+</p>
+
 [Español](README.es.md)
 
 A Claude Code plugin that lets Claude read your Moodle. It is made for the Moodle Centros site of Sevilla (Junta de Andalucía) with Acceso Único sign-in. It is unofficial and not affiliated with Moodle or the Junta.
@@ -8,19 +12,19 @@ A Claude Code plugin that lets Claude read your Moodle. It is made for the Moodl
 
 Ask in plain words, for example "what assignments haven't I done?" or "what did I get on the last exam?"
 
-| Tool | What you get |
-|---|---|
-| `pending` | assignments not submitted, overdue ones included |
-| `list` | every assignment with its state |
-| `show` | one assignment: instructions, files, dates, submission, grade, feedback |
-| `courses` | your courses |
-| `contents` | sections, activities and files of a course |
-| `quizzes` | quizzes with dates and attempts used |
-| `grades` | grades and totals |
-| `upcoming` | calendar deadlines |
-| `news` | latest forum discussions |
-| `file` | the contents of a course file |
-| `login` | renews your access token |
+| Tool       | What you get                                                            |
+| ---------- | ----------------------------------------------------------------------- |
+| `pending`  | assignments not submitted, overdue ones included                        |
+| `list`     | every assignment with its state                                         |
+| `show`     | one assignment: instructions, files, dates, submission, grade, feedback |
+| `courses`  | your courses                                                            |
+| `contents` | sections, activities and files of a course                              |
+| `quizzes`  | quizzes with dates and attempts used                                    |
+| `grades`   | grades and totals                                                       |
+| `upcoming` | calendar deadlines                                                      |
+| `news`     | latest forum discussions                                                |
+| `file`     | the contents of a course file                                           |
+| `login`    | renews your access token                                                |
 
 It never submits or edits anything on Moodle.
 
@@ -28,8 +32,6 @@ It never submits or edits anything on Moodle.
 
 - [Claude Code](https://claude.com/claude-code)
 - [Node.js](https://nodejs.org) 20 or newer
-- Access to this repository while it is private, with git signed in to GitHub
-
 ## Install
 
 Run these inside Claude Code:
