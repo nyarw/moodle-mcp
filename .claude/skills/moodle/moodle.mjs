@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
-import { text } from 'node:stream/consumers';
 import { McpServer } from '@modelcontextprotocol/server';
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
 import { extractText, getDocumentProxy } from 'unpdf';
@@ -327,11 +326,58 @@ async function openFile({ url, save }) {
   throw new Error(`Cannot read ${type || 'this file type'} directly. Call again with save.`);
 }
 
+// Acceso Único (CAS), the only sign-in this Moodle offers.
+const CAS = 'https://edea.juntadeandalucia.es';
+
+async function casRequest(jar, url, body) {
+  const { host } = new URL(url);
+  const cookies = jar.get(host) ?? new Map();
+  jar.set(host, cookies);
+  const response = await fetch(url, {
+    method: body ? 'POST' : 'GET',
+    body,
+    redirect: 'manual', // never lets the password body be resent somewhere else
+    headers: { cookie: [...cookies].map(([k, v]) => `${k}=${v}`).join('; ') },
+    signal: AbortSignal.timeout(30_000),
+  });
+  for (const header of response.headers.getSetCookie()) {
+    const [pair] = header.split(';');
+    const at = pair.indexOf('=');
+    cookies.set(pair.slice(0, at), pair.slice(at + 1));
+  }
+  return response;
+}
+
+async function casFollow(jar, url, body) {
+  let response = await casRequest(jar, url, body);
+  for (let hop = 0; hop < 10; hop++) {
+    const next = response.headers.get('location');
+    if (!next || next.startsWith('moodlemobile:')) return { url, response, next };
+    url = new URL(next, url).href;
+    response = await casRequest(jar, url);
+  }
+  throw new Error('Too many redirects');
+}
+
 async function login(site) {
-  assert(site, 'Usage: login <site-url>, with the token on stdin');
+  assert(site, 'Usage: login <site-url>, with MOODLE_USER and MOODLE_PASSWORD set');
   const url = new URL(site);
   assert(url.protocol === 'https:', 'The site address must start with https://');
-  config = { url: url.href.replace(/\/+$/, ''), token: parseToken(await text(process.stdin)) };
+  const base = url.href.replace(/\/+$/, '');
+  const { MOODLE_USER: user, MOODLE_PASSWORD: password } = process.env;
+  assert(user && password, 'Set MOODLE_USER and MOODLE_PASSWORD');
+  const jar = new Map();
+  const start = await casFollow(jar, `${base}/login/index.php?authCAS=CAS`);
+  const execution = (await start.response.text()).match(/name="execution"\s+value="([^"]+)"/)?.[1];
+  assert(start.url.startsWith(`${CAS}/cas/login`) && execution, 'Sign-in form not found');
+  const signedIn = await casFollow(jar, start.url, new URLSearchParams({
+    username: user, password, execution, _eventId: 'submit', geolocation: '',
+  }));
+  assert(signedIn.url.startsWith(base), 'Not signed in: stayed outside Moodle');
+  const launch = await casFollow(jar, `${base}/admin/tool/mobile/launch.php?service=moodle_mobile_app&passport=12345&urlscheme=moodlemobile`);
+  const address = launch.next ?? (await launch.response.text()).match(/moodlemobile:\/\/token=[\w+/=]+/)?.[0];
+  assert(address, 'No token received');
+  config = { url: base, token: parseToken(address) };
   const { fullname } = await call('core_webservice_get_site_info');
   writeFileSync(CONFIG, JSON.stringify(config), { mode: 0o600 });
   return `Logged in as ${fullname}. Token saved to ${CONFIG}`;

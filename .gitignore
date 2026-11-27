@@ -1,2 +1,4 @@
 node_modules/
+.env
+sso-test.mjs
 .claude/settings.local.json
