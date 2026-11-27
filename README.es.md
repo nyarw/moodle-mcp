@@ -1,5 +1,9 @@
 # moodle-mcp
 
+<p align="center">
+  <img src=".claude-plugin/icon.png" alt="Icono de moodle-mcp" width="160">
+</p>
+
 [English](README.md)
 
 Un plugin de Claude Code que permite a Claude leer tu Moodle. Está hecho para Moodle Centros de Sevilla (Junta de Andalucía) con inicio de sesión de Acceso Único. No es oficial ni tiene relación con Moodle ni con la Junta.
@@ -8,19 +12,19 @@ Un plugin de Claude Code que permite a Claude leer tu Moodle. Está hecho para M
 
 Pregunta con tus palabras, por ejemplo «¿qué tareas me faltan?» o «¿qué nota saqué en el último examen?».
 
-| Herramienta | Qué te da |
-|---|---|
-| `pending` | tareas sin entregar, incluidas las atrasadas |
-| `list` | todas las tareas con su estado |
-| `show` | una tarea: instrucciones, archivos, fechas, entrega, nota y comentarios |
-| `courses` | tus cursos |
-| `contents` | secciones, actividades y archivos de un curso |
-| `quizzes` | cuestionarios con fechas e intentos usados |
-| `grades` | notas y totales |
-| `upcoming` | fechas de entrega del calendario |
-| `news` | últimos mensajes de los foros |
-| `file` | el contenido de un archivo del curso |
-| `login` | renueva tu token de acceso |
+| Herramienta | Qué te da                                                               |
+| ----------- | ----------------------------------------------------------------------- |
+| `pending`   | tareas sin entregar, incluidas las atrasadas                            |
+| `list`      | todas las tareas con su estado                                          |
+| `show`      | una tarea: instrucciones, archivos, fechas, entrega, nota y comentarios |
+| `courses`   | tus cursos                                                              |
+| `contents`  | secciones, actividades y archivos de un curso                           |
+| `quizzes`   | cuestionarios con fechas e intentos usados                              |
+| `grades`    | notas y totales                                                         |
+| `upcoming`  | fechas de entrega del calendario                                        |
+| `news`      | últimos mensajes de los foros                                           |
+| `file`      | el contenido de un archivo del curso                                    |
+| `login`     | renueva tu token de acceso                                              |
 
 Nunca entrega ni modifica nada en Moodle.
 
@@ -28,8 +32,6 @@ Nunca entrega ni modifica nada en Moodle.
 
 - [Claude Code](https://claude.com/claude-code)
 - [Node.js](https://nodejs.org) 20 o superior
-- Acceso a este repositorio mientras sea privado, con git conectado a GitHub
-
 ## Instalación
 
 Ejecuta esto dentro de Claude Code:
